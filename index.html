@@ -1,0 +1,360 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的待办清单</title>
+  <style>
+    :root {
+      --bg-start: #eef7ff;
+      --bg-end: #f2fff8;
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --line: #e5e7eb;
+      --primary: #2f80ed;
+      --primary-hover: #1f6fd6;
+      --success: #10b981;
+      --success-hover: #0f9f70;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --shadow: 0 14px 32px rgba(31, 41, 55, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      padding: 24px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--text-main);
+      background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+    }
+
+    /* 页面主卡片：整体居中，最大宽度 500px */
+    .todo-app {
+      width: 100%;
+      max-width: 500px;
+      padding: 28px 22px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      background: var(--card-bg);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+    }
+
+    h1 {
+      margin-bottom: 18px;
+      font-size: 28px;
+      letter-spacing: 0.5px;
+    }
+
+    /* 输入区域：输入框 + 添加按钮 */
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .task-input {
+      flex: 1;
+      height: 42px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font-size: 15px;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .task-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.15);
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s, background-color 0.2s;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .btn-add {
+      height: 42px;
+      padding: 0 16px;
+      background: var(--primary);
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    .btn-add:hover {
+      background: var(--primary-hover);
+    }
+
+    .task-list {
+      list-style: none;
+      display: grid;
+      gap: 10px;
+    }
+
+    /* 单条任务：左侧内容，右侧操作按钮 */
+    .task-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .task-text {
+      flex: 1;
+      min-width: 0;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    /* 已完成状态：文字变灰并添加删除线 */
+    .task-item.is-completed .task-text {
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn-complete,
+    .btn-delete {
+      min-width: 56px;
+      padding: 7px 10px;
+      color: #fff;
+    }
+
+    .btn-complete {
+      background: var(--success);
+    }
+
+    .btn-complete:hover {
+      background: var(--success-hover);
+    }
+
+    .btn-delete {
+      background: var(--danger);
+    }
+
+    .btn-delete:hover {
+      background: var(--danger-hover);
+    }
+
+    .tip {
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* 手机端适配（如 375px 宽度） */
+    @media (max-width: 420px) {
+      .todo-app {
+        padding: 22px 16px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .input-row {
+        flex-direction: column;
+      }
+
+      .btn-add {
+        width: 100%;
+      }
+
+      .task-item {
+        align-items: flex-start;
+      }
+
+      .actions {
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 主容器 -->
+  <main class="todo-app">
+    <h1>我的待办清单</h1>
+
+    <!-- 输入区域：暂时只做静态展示，无 JavaScript 行为 -->
+    <section class="input-row">
+      <input class="task-input" type="text" placeholder="请输入新任务..." aria-label="新任务输入框">
+      <button class="btn-add" type="button">添加</button>
+    </section>
+
+    <!-- 任务列表：页面加载时从 localStorage 恢复 -->
+    <ul class="task-list"></ul>
+
+    <p class="tip">任务会自动保存到当前浏览器，本地刷新后仍会保留。</p>
+  </main>
+  <script>
+    // 获取页面中要用到的元素
+    const taskInput = document.querySelector(".task-input");
+    const addButton = document.querySelector(".btn-add");
+    const taskList = document.querySelector(".task-list");
+    const storageKey = "todoList";
+
+    // 根据输入内容创建一条新的任务项
+    function createTaskItem(taskContent, isCompleted = false) {
+      const taskItem = document.createElement("li");
+      taskItem.className = "task-item";
+
+      const taskText = document.createElement("span");
+      taskText.className = "task-text";
+      taskText.textContent = taskContent;
+
+      const actions = document.createElement("div");
+      actions.className = "actions";
+
+      const completeButton = document.createElement("button");
+      completeButton.className = "btn-complete";
+      completeButton.type = "button";
+      completeButton.textContent = isCompleted ? "取消" : "完成";
+
+      const deleteButton = document.createElement("button");
+      deleteButton.className = "btn-delete";
+      deleteButton.type = "button";
+      deleteButton.textContent = "删除";
+
+      actions.appendChild(completeButton);
+      actions.appendChild(deleteButton);
+      taskItem.appendChild(taskText);
+      taskItem.appendChild(actions);
+
+      if (isCompleted) {
+        taskItem.classList.add("is-completed");
+      }
+
+      return taskItem;
+    }
+
+    // 从页面读取当前任务列表，转换成可存储的 JSON 数据结构
+    function getTaskDataList() {
+      const taskItems = taskList.querySelectorAll(".task-item");
+
+      return Array.from(taskItems).map(function (taskItem) {
+        const taskContent = taskItem.querySelector(".task-text").textContent;
+        const isCompleted = taskItem.classList.contains("is-completed");
+
+        return {
+          content: taskContent,
+          completed: isCompleted
+        };
+      });
+    }
+
+    // 把当前任务列表保存到 localStorage
+    function saveTaskList() {
+      const taskDataList = getTaskDataList();
+      localStorage.setItem(storageKey, JSON.stringify(taskDataList));
+    }
+
+    // 页面加载时读取 localStorage，并恢复任务列表
+    function loadTaskList() {
+      const savedTaskJson = localStorage.getItem(storageKey);
+
+      if (!savedTaskJson) {
+        return;
+      }
+
+      try {
+        const savedTaskList = JSON.parse(savedTaskJson);
+
+        if (!Array.isArray(savedTaskList)) {
+          return;
+        }
+
+        taskList.innerHTML = "";
+
+        savedTaskList.forEach(function (taskData) {
+          const taskContent = typeof taskData.content === "string" ? taskData.content.trim() : "";
+
+          if (taskContent === "") {
+            return;
+          }
+
+          const taskItem = createTaskItem(taskContent, Boolean(taskData.completed));
+          taskList.appendChild(taskItem);
+        });
+      } catch (error) {
+        console.error("读取 todoList 失败：", error);
+      }
+    }
+
+    // 页面初始化：优先显示本地保存的数据；第一次使用时就是空列表
+    loadTaskList();
+
+    // 点击“添加”按钮时，把输入框内容变成新任务
+    addButton.addEventListener("click", function () {
+      // trim() 可以去掉首尾空格，避免添加空任务
+      const taskContent = taskInput.value.trim();
+
+      if (taskContent === "") {
+        return;
+      }
+
+      const newTaskItem = createTaskItem(taskContent);
+      taskList.appendChild(newTaskItem);
+      saveTaskList();
+
+      // 添加成功后清空输入框，并把光标放回输入框
+      taskInput.value = "";
+      taskInput.focus();
+    });
+
+    // 使用事件委托处理任务操作：完成切换 + 删除
+    taskList.addEventListener("click", function (event) {
+      const clickedButton = event.target;
+      const currentTaskItem = clickedButton.closest(".task-item");
+
+      if (!currentTaskItem) {
+        return;
+      }
+
+      // 点击“完成”按钮：切换完成状态，并同步按钮文字
+      if (clickedButton.classList.contains("btn-complete")) {
+        const isCompleted = currentTaskItem.classList.toggle("is-completed");
+        clickedButton.textContent = isCompleted ? "取消" : "完成";
+        saveTaskList();
+        return;
+      }
+
+      // 点击“删除”按钮：只删除当前任务项
+      if (clickedButton.classList.contains("btn-delete")) {
+        currentTaskItem.remove();
+        saveTaskList();
+      }
+    });
+  </script>
+</body>
+</html>
+
