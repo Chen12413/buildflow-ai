@@ -1,13 +1,14 @@
 services:
-  - type: pserv
-    name: buildflow-api
+  - type: web
+    name: chen12413-buildflow-api
     runtime: docker
-    plan: starter
+    plan: free
     region: singapore
     rootDir: api
-    dockerfilePath: ./api/Dockerfile
-    dockerContext: ./api
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     autoDeployTrigger: off
+    healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
         value: sqlite+pysqlite:///./buildflow.db
@@ -19,19 +20,19 @@ services:
         value: auto
 
   - type: web
-    name: buildflow-web
+    name: chen12413-buildflow-web
     runtime: docker
     plan: free
     region: singapore
     rootDir: web
-    dockerfilePath: ./web/Dockerfile
-    dockerContext: ./web
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     autoDeployTrigger: off
     envVars:
       - key: NEXT_PUBLIC_API_BASE_URL
         value: ""
       - key: API_PROXY_TARGET
         fromService:
-          name: buildflow-api
-          type: pserv
-          property: hostport
+          name: chen12413-buildflow-api
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
