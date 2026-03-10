@@ -1,0 +1,39 @@
+﻿# Node
+node_modules/
+web/node_modules/
+.next/
+web/.next/
+out/
+
+# Python
+__pycache__/
+.pytest_cache/
+web/.pytest_cache/
+.venv/
+api/.venv/
+*.pyc
+*.pyo
+*.pyd
+
+# Env
+.env
+.env.local
+
+# Database
+*.db
+*.sqlite3
+
+# Reports & artifacts
+output/
+web/playwright-report/
+web/test-results/
+.playwright-cli/
+
+# Local temporary files
+tmp-test-write.txt
+scripts/path-machine-reference-*.txt
+scripts/path-user-backup-*.txt
+
+# OS
+.DS_Store
+Thumbs.db

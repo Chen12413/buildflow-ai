@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: ./api
+    container_name: buildflow-api-demo
+    environment:
+      DATABASE_URL: sqlite+pysqlite:///./buildflow.db
+      LLM_PROVIDER: mock
+      LLM_MODEL: mock-buildflow-v1
+      LLM_API_MODE: auto
+      CORS_ALLOW_ORIGINS: '["http://localhost:3000","http://127.0.0.1:3000"]'
+    ports:
+      - "8000:8000"
+
+  web:
+    build:
+      context: ./web
+      args:
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+    container_name: buildflow-web-demo
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
