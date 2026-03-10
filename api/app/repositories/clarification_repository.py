@@ -1,4 +1,4 @@
-﻿from sqlalchemy import delete, select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from app.models.clarification import ClarificationAnswer, ClarificationQuestion
@@ -15,9 +15,8 @@ class ClarificationRepository:
             for index, question in enumerate(questions, start=1)
         ]
         self.db.add_all(question_rows)
+        self.db.flush()
         self.db.commit()
-        for row in question_rows:
-            self.db.refresh(row)
         return question_rows
 
     def list_questions(self, project_id: str) -> list[ClarificationQuestion]:
@@ -31,9 +30,8 @@ class ClarificationRepository:
             for item in answers
         ]
         self.db.add_all(answer_rows)
+        self.db.flush()
         self.db.commit()
-        for row in answer_rows:
-            self.db.refresh(row)
         return answer_rows
 
     def list_answers(self, project_id: str) -> list[ClarificationAnswer]:

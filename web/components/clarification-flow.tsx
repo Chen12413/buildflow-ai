@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -17,20 +17,38 @@ export function ClarificationFlow({ projectId }: { projectId: string }) {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function bootstrap() {
       try {
         const projectData = await getProject(projectId);
+        if (cancelled) {
+          return;
+        }
         setProject(projectData);
+
         const clarificationResult = await generateClarifications(projectId);
+        if (cancelled) {
+          return;
+        }
         setQuestions(clarificationResult.questions);
       } catch (loadError) {
-        setError(loadError instanceof Error ? loadError.message : "加载澄清问题失败");
+        if (cancelled) {
+          return;
+        }
+        setError(loadError instanceof Error ? loadError.message : "????????");
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
     void bootstrap();
+
+    return () => {
+      cancelled = true;
+    };
   }, [projectId]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -43,13 +61,13 @@ export function ClarificationFlow({ projectId }: { projectId: string }) {
         projectId,
         questions.map((question) => ({
           question_id: question.id,
-          answer: answers[question.id] || "暂时没有补充。",
+          answer: answers[question.id] || "???????",
         })),
       );
       const result = await generatePrd(projectId);
       router.push(`/projects/${projectId}/prd?runId=${result.run.id}`);
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "提交澄清答案失败");
+      setError(submitError instanceof Error ? submitError.message : "????????");
     } finally {
       setSubmitting(false);
     }
@@ -57,9 +75,9 @@ export function ClarificationFlow({ projectId }: { projectId: string }) {
 
   if (loading) {
     return (
-      <PageShell title="澄清问答" description="正在生成高价值澄清问题。">
+      <PageShell title="????" description="????????????">
         <p className="text-sm text-slate-300" data-testid="clarification-loading">
-          加载中...
+          ???...
         </p>
       </PageShell>
     );
@@ -67,8 +85,8 @@ export function ClarificationFlow({ projectId }: { projectId: string }) {
 
   return (
     <PageShell
-      title={`澄清问答${project ? ` · ${project.name}` : ""}`}
-      description="BuildFlow AI 会围绕目标用户、核心场景、MVP 边界和成功标准引导你补齐信息。"
+      title={`????${project ? ` ? ${project.name}` : ""}`}
+      description="BuildFlow AI ?????????????MVP ???????????????"
     >
       <form className="space-y-6" onSubmit={handleSubmit} data-testid="clarification-form">
         {questions.map((question) => (
@@ -79,7 +97,7 @@ export function ClarificationFlow({ projectId }: { projectId: string }) {
               value={answers[question.id] ?? ""}
               onChange={(event) => setAnswers((current) => ({ ...current, [question.id]: event.target.value }))}
               className="rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none"
-              placeholder="填写回答，或者保留为空让系统生成初版。"
+              placeholder="???????????????????"
               data-testid="clarification-answer"
             />
           </label>
@@ -93,7 +111,7 @@ export function ClarificationFlow({ projectId }: { projectId: string }) {
           data-testid="clarification-submit"
           className="rounded-lg bg-sky-500 px-5 py-3 font-medium text-slate-950 hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300"
         >
-          {submitting ? "提交中..." : "保存答案并生成 PRD"}
+          {submitting ? "???..." : "??????? PRD"}
         </button>
       </form>
     </PageShell>

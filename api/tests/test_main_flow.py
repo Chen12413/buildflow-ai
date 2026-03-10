@@ -44,6 +44,23 @@ def test_clarification_generation_and_answer_save(client):
     assert answer_response.json()["data"]["saved_count"] == 1
 
 
+def test_clarification_generation_is_idempotent_for_existing_questions(client):
+    project = create_project(client)
+    project_id = project["id"]
+
+    first_response = client.post(f"/api/v1/projects/{project_id}/clarifications/generate", json={})
+    second_response = client.post(f"/api/v1/projects/{project_id}/clarifications/generate", json={})
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 200
+
+    first_questions = first_response.json()["data"]["questions"]
+    second_questions = second_response.json()["data"]["questions"]
+
+    assert [item["id"] for item in second_questions] == [item["id"] for item in first_questions]
+    assert second_response.json()["data"]["run"]["status"] == "completed"
+
+
 def test_prd_and_planning_generation_and_export(client):
     project = create_project(client)
     project_id = project["id"]

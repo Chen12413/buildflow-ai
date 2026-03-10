@@ -17,6 +17,15 @@ class ClarificationWorkflow:
         if project is None:
             raise ValueError("project_not_found")
 
+        existing_questions = self.clarification_repository.list_questions(project_id)
+        if existing_questions:
+            run = self.run_repository.create(
+                project_id=project_id,
+                run_type=RunType.CLARIFICATION_GENERATION,
+                status=RunStatus.COMPLETED,
+            )
+            return run, existing_questions
+
         run = self.run_repository.create(project_id=project_id, run_type=RunType.CLARIFICATION_GENERATION, status=RunStatus.RUNNING)
         try:
             project_read = ProjectRead.model_validate(project)

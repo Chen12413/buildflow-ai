@@ -1,24 +1,25 @@
-﻿import { expect, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-test.describe("BuildFlow 主链路", () => {
-  test("用户可以从想法走到 PRD 与 Planning", async ({ page }) => {
-    const projectName = `E2E 项目 ${Date.now()}`;
+test.describe("BuildFlow main flow", () => {
+  test("user can go from idea to PRD and planning", async ({ page }) => {
+    const projectName = `E2E Project ${Date.now()}`;
 
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: /用一条主链路/ })).toBeVisible();
+    await expect(page).toHaveURL(/\/$/);
 
-    await page.getByRole("link", { name: "开始创建项目" }).click();
+    await page.goto("/projects/new");
     await expect(page).toHaveURL(/\/projects\/new$/);
+    await expect(page.getByTestId("project-form")).toBeVisible();
 
     await page.getByTestId("project-name").fill(projectName);
-    await page.getByTestId("project-idea").fill("为独立开发者和 AI 产品经理提供从想法到 PRD 与开发规划的一站式生成能力。");
-    await page.getByTestId("project-target-user").fill("独立开发者、AI 产品经理、创业团队");
+    await page.getByTestId("project-idea").fill("Generate a PRD and implementation plan for independent builders.");
+    await page.getByTestId("project-target-user").fill("indie hackers, AI product managers, startup teams");
     await page.getByTestId("project-platform").selectOption("web");
-    await page.getByTestId("project-constraints").fill("一天内完成 MVP，优先保证可维护性、可测试性和演示效果。");
+    await page.getByTestId("project-constraints").fill("Ship an MVP in one day with strong maintainability and testability.");
     await page.getByTestId("project-submit").click();
 
     await expect(page).toHaveURL(/\/projects\/[^/]+\/clarify$/);
-    await expect(page.getByRole("heading", { name: /澄清问答/ })).toBeVisible();
+    await expect(page.getByTestId("page-title")).toBeVisible();
 
     const answers = page.getByTestId("clarification-answer");
     await expect(answers.first()).toBeVisible();
@@ -28,7 +29,7 @@ test.describe("BuildFlow 主链路", () => {
     for (let index = 0; index < answerCount; index += 1) {
       await answers
         .nth(index)
-        .fill(`第 ${index + 1} 个回答：优先覆盖高频场景，突出结构化输出、测试闭环和版本迭代能力。`);
+        .fill(`Answer ${index + 1}: prioritize frequent scenarios, structured output, testing coverage, and iteration speed.`);
     }
 
     await page.getByTestId("clarification-submit").click();

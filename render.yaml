@@ -1,0 +1,37 @@
+services:
+  - type: pserv
+    name: buildflow-api
+    runtime: docker
+    plan: starter
+    region: singapore
+    rootDir: api
+    dockerfilePath: ./api/Dockerfile
+    dockerContext: ./api
+    autoDeployTrigger: off
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite+pysqlite:///./buildflow.db
+      - key: LLM_PROVIDER
+        value: mock
+      - key: LLM_MODEL
+        value: mock-buildflow-v1
+      - key: LLM_API_MODE
+        value: auto
+
+  - type: web
+    name: buildflow-web
+    runtime: docker
+    plan: free
+    region: singapore
+    rootDir: web
+    dockerfilePath: ./web/Dockerfile
+    dockerContext: ./web
+    autoDeployTrigger: off
+    envVars:
+      - key: NEXT_PUBLIC_API_BASE_URL
+        value: ""
+      - key: API_PROXY_TARGET
+        fromService:
+          name: buildflow-api
+          type: pserv
+          property: hostport
