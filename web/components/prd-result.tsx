@@ -7,6 +7,7 @@ import { PageShell } from "@/components/page-shell";
 import { PrdViewer } from "@/components/prd-viewer";
 import { StatusPanel } from "@/components/status-panel";
 import { exportMarkdown, generatePlanning, getLatestPrd, getProject, getRun } from "@/lib/api-client";
+import { normalizeProjectName } from "@/lib/project-name";
 import { loadArtifactWithPolling } from "@/lib/run-artifact-polling";
 import { Project, PrdArtifact } from "@/lib/types";
 
@@ -63,6 +64,7 @@ export function PrdResult({ projectId, runId }: { projectId: string; runId?: str
   }, [projectId, runId]);
 
   const markdown = useMemo(() => artifact?.content_markdown ?? "", [artifact]);
+  const normalizedProjectName = useMemo(() => normalizeProjectName(project?.name), [project?.name]);
 
   async function handleExport() {
     const content = await exportMarkdown(projectId);
@@ -88,7 +90,11 @@ export function PrdResult({ projectId, runId }: { projectId: string; runId?: str
   }
 
   return (
-    <PageShell stageKey="prd" title={`PRD 结果${project ? ` · ${project.name}` : ""}`} description="系统会输出结构化 PRD，并保留可导出的 Markdown 版本。">
+    <PageShell
+      stageKey="prd"
+      title={`PRD 结果${normalizedProjectName ? ` · ${normalizedProjectName}` : ""}`}
+      description="系统会输出结构化 PRD，并保留可导出的 Markdown 版本。"
+    >
       <div className="space-y-6">
         <StatusPanel
           phaseLabel="PRD 生成"

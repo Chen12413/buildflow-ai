@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { AgentRunPanel } from "@/components/agent-run-panel";
+import { normalizeProjectName } from "@/lib/project-name";
 import { DemoBlueprintDocument } from "@/lib/types";
 
 function getLinkedScreenIndex(currentIndex: number, screenCount: number) {
@@ -31,6 +32,10 @@ export function DemoViewer({ document }: { document: DemoBlueprintDocument }) {
 
     return activeScreen.actions[activeActionIndex] ?? activeScreen.actions[0] ?? null;
   }, [activeActionIndex, activeScreen]);
+  const normalizedProductName = useMemo(
+    () => normalizeProjectName(document.product_name) || document.product_name,
+    [document.product_name],
+  );
 
   const sampleInputs = activeScreen?.sample_inputs ?? [];
   const sampleOutputs = activeScreen?.sample_outputs ?? [];
@@ -42,7 +47,7 @@ export function DemoViewer({ document }: { document: DemoBlueprintDocument }) {
       <section className="hero-panel px-6 py-6">
         <div className="flex flex-wrap items-center gap-2">
           <span className="section-label">产品 Demo Studio</span>
-          <span className="stage-pill border-white/10 bg-white/5 text-slate-300">{document.product_name}</span>
+          <span className="stage-pill border-white/10 bg-white/5 text-slate-300">{normalizedProductName}</span>
         </div>
 
         <div className="mt-6 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">

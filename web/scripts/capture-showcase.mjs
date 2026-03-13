@@ -150,7 +150,7 @@ async function main() {
     const browser = await chromium.launch({ headless: true });
     const page = await browser.newPage({ viewport: { width: 1440, height: 960 } });
 
-    const projectName = `AI 旅游规划助手 ${Date.now()}`;
+    const projectName = "AI 旅游规划助手";
 
     await page.goto(baseURL, { waitUntil: "networkidle" });
     await page.screenshot({ path: path.join(outputDir, "home.png"), fullPage: false });

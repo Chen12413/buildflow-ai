@@ -13,7 +13,7 @@
 [![GitHub Repo](https://img.shields.io/badge/GitHub-buildflow--ai-111827?logo=github&logoColor=white)](https://github.com/Chen12413/buildflow-ai)
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Chen12413/buildflow-ai)
 
-BuildFlow AI is an AI agent workflow project built with `Next.js + FastAPI`. It helps users move from a rough idea to a fast product implementation path, including clarification, PRD, planning, task breakdown, and a demo of the product they actually want to build.
+从想法到产品快速实现的 AI agent workflow（Next.js + FastAPI）
 
 > Main flow: `Idea Input -> Clarification -> PRD -> Planning -> Task Breakdown -> Demo -> Export`
 

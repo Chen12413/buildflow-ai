@@ -33,8 +33,7 @@ export function ProgressBar({
         <div
           className={`progress-fill progress-fill--${tone}`}
           style={{
-            transform: `scaleX(${normalized / 100})`,
-            transformOrigin: "left center",
+            width: `${normalized}%`,
           }}
         />
       </div>

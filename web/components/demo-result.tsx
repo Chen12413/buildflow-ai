@@ -6,6 +6,7 @@ import { DemoViewer } from "@/components/demo-viewer";
 import { PageShell } from "@/components/page-shell";
 import { StatusPanel } from "@/components/status-panel";
 import { exportDemoMarkdown, getLatestDemo, getProject, getRun } from "@/lib/api-client";
+import { normalizeProjectName } from "@/lib/project-name";
 import { loadArtifactWithPolling } from "@/lib/run-artifact-polling";
 import { DemoArtifact, Project } from "@/lib/types";
 
@@ -60,6 +61,7 @@ export function DemoResult({ projectId, runId }: { projectId: string; runId?: st
   }, [projectId, runId]);
 
   const markdown = useMemo(() => artifact?.content_markdown ?? "", [artifact]);
+  const normalizedProjectName = useMemo(() => normalizeProjectName(project?.name), [project?.name]);
 
   async function handleExport() {
     const content = await exportDemoMarkdown(projectId);
@@ -73,7 +75,11 @@ export function DemoResult({ projectId, runId }: { projectId: string; runId?: st
   }
 
   return (
-    <PageShell stageKey="demo" title={`产品 Demo${project ? ` · ${project.name}` : ""}`} description="Demo Generator 会基于前序产物生成可交互演示区、多 Agent 面板和展示脚本。">
+    <PageShell
+      stageKey="demo"
+      title={`产品 Demo${normalizedProjectName ? ` · ${normalizedProjectName}` : ""}`}
+      description="Demo Generator 会基于前序产物生成可交互演示区、多 Agent 面板和展示脚本。"
+    >
       <div className="space-y-6">
         <StatusPanel
           phaseLabel="产品 Demo"

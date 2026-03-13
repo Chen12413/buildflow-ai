@@ -19,6 +19,23 @@ def test_create_project(client):
     assert payload["platform"] == "web"
 
 
+def test_create_project_strips_timestamp_suffix(client):
+    response = client.post(
+        "/api/v1/projects",
+        json={
+            "name": "AI 旅游规划助手 1741812345678",
+            "idea": "一个帮助用户把产品想法变成 PRD 的 AI 工具",
+            "target_user": "独立开发者、产品经理",
+            "platform": "web",
+            "constraints": "一天内完成 MVP",
+        },
+    )
+
+    assert response.status_code == 201
+    payload = response.json()["data"]
+    assert payload["name"] == "AI 旅游规划助手"
+
+
 def test_clarification_generation_and_answer_save(client):
     project = create_project(client)
     project_id = project["id"]

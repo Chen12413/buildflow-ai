@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { PageShell } from "@/components/page-shell";
 import { createProject } from "@/lib/api-client";
+import { normalizeProjectName } from "@/lib/project-name";
 import { Platform } from "@/lib/types";
 
 const outcomeItems = [
@@ -25,7 +26,7 @@ export default function NewProjectPage() {
 
     const formData = new FormData(event.currentTarget);
     const payload = {
-      name: String(formData.get("name") ?? ""),
+      name: normalizeProjectName(String(formData.get("name") ?? "")),
       idea: String(formData.get("idea") ?? ""),
       target_user: String(formData.get("target_user") ?? ""),
       platform: String(formData.get("platform") ?? "web") as Platform,

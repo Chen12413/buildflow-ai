@@ -7,6 +7,7 @@ import { PageShell } from "@/components/page-shell";
 import { ProgressBar } from "@/components/progress-bar";
 import { StatusPanel } from "@/components/status-panel";
 import { generateClarifications, getProject, generatePrd, saveClarificationAnswers } from "@/lib/api-client";
+import { normalizeProjectName } from "@/lib/project-name";
 import { ClarificationQuestion, Project } from "@/lib/types";
 
 function getAnsweredCount(questions: ClarificationQuestion[], answers: Record<string, string>) {
@@ -84,6 +85,7 @@ export function ClarificationFlow({ projectId }: { projectId: string }) {
 
   const answeredCount = useMemo(() => getAnsweredCount(questions, answers), [questions, answers]);
   const completionRatio = questions.length ? (answeredCount / questions.length) * 100 : 0;
+  const normalizedProjectName = useMemo(() => normalizeProjectName(project?.name), [project?.name]);
 
   if (loading) {
     return (
@@ -108,7 +110,7 @@ export function ClarificationFlow({ projectId }: { projectId: string }) {
   return (
     <PageShell
       stageKey="clarify"
-      title={`澄清问题${project ? ` · ${project.name}` : ""}`}
+      title={`澄清问题${normalizedProjectName ? ` · ${normalizedProjectName}` : ""}`}
       description="回答这些关键问题后，系统会基于更完整的边界信息自动生成 PRD。"
     >
       <div className="space-y-6">

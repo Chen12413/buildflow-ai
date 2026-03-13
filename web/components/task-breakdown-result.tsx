@@ -7,6 +7,7 @@ import { PageShell } from "@/components/page-shell";
 import { StatusPanel } from "@/components/status-panel";
 import { TaskBreakdownViewer } from "@/components/task-breakdown-viewer";
 import { exportTaskBreakdownMarkdown, generateDemo, getLatestTaskBreakdown, getProject, getRun } from "@/lib/api-client";
+import { normalizeProjectName } from "@/lib/project-name";
 import { loadArtifactWithPolling } from "@/lib/run-artifact-polling";
 import { Project, TaskBreakdownArtifact } from "@/lib/types";
 
@@ -63,6 +64,7 @@ export function TaskBreakdownResult({ projectId, runId }: { projectId: string; r
   }, [projectId, runId]);
 
   const markdown = useMemo(() => artifact?.content_markdown ?? "", [artifact]);
+  const normalizedProjectName = useMemo(() => normalizeProjectName(project?.name), [project?.name]);
 
   async function handleExport() {
     const content = await exportTaskBreakdownMarkdown(projectId);
@@ -90,7 +92,7 @@ export function TaskBreakdownResult({ projectId, runId }: { projectId: string; r
   return (
     <PageShell
       stageKey="task-breakdown"
-      title={`模块任务拆解${project ? ` · ${project.name}` : ""}`}
+      title={`模块任务拆解${normalizedProjectName ? ` · ${normalizedProjectName}` : ""}`}
       description="Task Breakdown Agent 会把 PRD 和开发规划继续拆到模块、任务、验收标准和测试清单。"
     >
       <div className="space-y-6">

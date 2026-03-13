@@ -7,6 +7,7 @@ import { PageShell } from "@/components/page-shell";
 import { PlanningViewer } from "@/components/planning-viewer";
 import { StatusPanel } from "@/components/status-panel";
 import { exportPlanningMarkdown, generateTaskBreakdown, getLatestPlanning, getProject, getRun } from "@/lib/api-client";
+import { normalizeProjectName } from "@/lib/project-name";
 import { loadArtifactWithPolling } from "@/lib/run-artifact-polling";
 import { PlanningArtifact, Project } from "@/lib/types";
 
@@ -63,6 +64,7 @@ export function PlanningResult({ projectId, runId }: { projectId: string; runId?
   }, [projectId, runId]);
 
   const markdown = useMemo(() => artifact?.content_markdown ?? "", [artifact]);
+  const normalizedProjectName = useMemo(() => normalizeProjectName(project?.name), [project?.name]);
 
   async function handleExport() {
     const content = await exportPlanningMarkdown(projectId);
@@ -88,7 +90,11 @@ export function PlanningResult({ projectId, runId }: { projectId: string; runId?
   }
 
   return (
-    <PageShell stageKey="planning" title={`开发规划${project ? ` · ${project.name}` : ""}`} description="Planning Agent 会基于最新 PRD 输出里程碑、任务与测试重点。">
+    <PageShell
+      stageKey="planning"
+      title={`开发规划${normalizedProjectName ? ` · ${normalizedProjectName}` : ""}`}
+      description="Planning Agent 会基于最新 PRD 输出里程碑、任务与测试重点。"
+    >
       <div className="space-y-6">
         <StatusPanel
           phaseLabel="开发规划"

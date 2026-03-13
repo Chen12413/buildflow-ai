@@ -127,14 +127,14 @@ body::after {
   .progress-fill {
     position: absolute;
     inset: 0;
-    width: 100%;
+    width: 0;
     height: 100%;
     border-radius: 9999px;
     background-size: 200% 100%;
     animation: shimmer 2.8s linear infinite;
-    transition: transform 280ms ease;
+    transition: width 280ms ease;
     box-shadow: 0 0 24px rgba(56, 189, 248, 0.22);
-    will-change: transform;
+    will-change: width;
   }
 
   .progress-fill--sky {
