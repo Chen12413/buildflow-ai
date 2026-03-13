@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+﻿from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.errors import raise_http_error
@@ -23,6 +23,8 @@ def get_run(run_id: str, db: Session = Depends(get_db)):
         artifact_type_by_run = {
             "prd_generation": ArtifactType.PRD.value,
             "planning_generation": ArtifactType.PLANNING.value,
+            "task_breakdown_generation": ArtifactType.TASK_BREAKDOWN.value,
+            "demo_generation": ArtifactType.DEMO.value,
         }
         artifact_type = artifact_type_by_run.get(run.type)
         if artifact_type is not None:

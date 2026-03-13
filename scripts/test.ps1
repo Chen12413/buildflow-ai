@@ -1,14 +1,17 @@
-﻿param(
+param(
     [switch]$SkipWeb,
     [switch]$InstallDeps,
-    [switch]$IncludeE2E
+    [switch]$IncludeE2E,
+    [switch]$UseStableWebCopy,
+    [string]$StableWebDir = "C:/buildflow-web-test"
 )
 
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
+. (Join-Path $PSScriptRoot "lib/web-workspace.ps1")
 $apiDir = Join-Path $repoRoot "api"
-$webDir = Join-Path $repoRoot "web"
+$webWorkspace = Get-WebWorkspaceContext -RepoRoot $repoRoot -UseStableWebCopy:$UseStableWebCopy -AutoUseStableWebCopy -StableWebDir $StableWebDir
 $apiVenvPython = Join-Path $apiDir ".venv\Scripts\python.exe"
 
 function Get-PythonBootstrapCommand {
@@ -57,13 +60,9 @@ try {
 }
 
 if (-not $SkipWeb) {
-    Push-Location $webDir
+    Ensure-WebWorkspace -Workspace $webWorkspace -InstallDeps:$InstallDeps
+    Push-Location $webWorkspace.ResolvedWebDir
     try {
-        if ($InstallDeps -or -not (Test-Path (Join-Path $webDir "node_modules"))) {
-            Write-Host "[web] Installing Node.js dependencies..." -ForegroundColor Cyan
-            npm install
-        }
-
         Write-Host "[web] Running next build..." -ForegroundColor Green
         npm run build
     } finally {
@@ -75,8 +74,8 @@ if ($IncludeE2E) {
     Write-Host "[e2e] Running Playwright regression..." -ForegroundColor Green
     $e2eScript = Join-Path $repoRoot "scripts/e2e.ps1"
     if ($InstallDeps) {
-        & $e2eScript -InstallDeps
+        & $e2eScript -InstallDeps -UseStableWebCopy:$webWorkspace.UsingStableCopy -StableWebDir $webWorkspace.StableWebDir
     } else {
-        & $e2eScript
+        & $e2eScript -UseStableWebCopy:$webWorkspace.UsingStableCopy -StableWebDir $webWorkspace.StableWebDir
     }
 }

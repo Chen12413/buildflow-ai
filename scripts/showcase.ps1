@@ -1,12 +1,15 @@
 param(
-    [switch]$InstallDeps
+    [switch]$InstallDeps,
+    [switch]$UseStableWebCopy,
+    [string]$StableWebDir = "C:/buildflow-web-showcase"
 )
 
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
+. (Join-Path $PSScriptRoot "lib/web-workspace.ps1")
 $apiDir = Join-Path $repoRoot "api"
-$webDir = Join-Path $repoRoot "web"
+$webWorkspace = Get-WebWorkspaceContext -RepoRoot $repoRoot -UseStableWebCopy:$UseStableWebCopy -AutoUseStableWebCopy -StableWebDir $StableWebDir
 $apiVenvPython = Join-Path $apiDir ".venv\Scripts\python.exe"
 
 function Get-PythonBootstrapCommand {
@@ -51,18 +54,19 @@ if ($InstallDeps -or -not $venvExists) {
     }
 }
 
-Push-Location $webDir
-try {
-    if ($InstallDeps -or -not (Test-Path (Join-Path $webDir "node_modules"))) {
-        Write-Host "[web] Installing Node.js dependencies..." -ForegroundColor Cyan
-        npm install
-    }
+Ensure-WebWorkspace -Workspace $webWorkspace -InstallDeps:$InstallDeps
 
+Push-Location $webWorkspace.ResolvedWebDir
+try {
     Write-Host "[web] Installing Playwright browser..." -ForegroundColor Cyan
     npx playwright install chromium
 
     Write-Host "[showcase] Capturing repository screenshots..." -ForegroundColor Green
+    $env:BUILD_FLOW_REPO_ROOT = $repoRoot
+    $env:BUILD_FLOW_WEB_WORKSPACE = $webWorkspace.ResolvedWebDir
     npm run capture:showcase
 } finally {
+    Remove-Item Env:BUILD_FLOW_REPO_ROOT -ErrorAction SilentlyContinue
+    Remove-Item Env:BUILD_FLOW_WEB_WORKSPACE -ErrorAction SilentlyContinue
     Pop-Location
 }

@@ -1,4 +1,4 @@
-def create_project(client):
+﻿def create_project(client):
     response = client.post(
         "/api/v1/projects",
         json={
@@ -61,7 +61,7 @@ def test_clarification_generation_is_idempotent_for_existing_questions(client):
     assert second_response.json()["data"]["run"]["status"] == "completed"
 
 
-def test_prd_and_planning_generation_and_export(client):
+def test_full_generation_chain_and_export(client):
     project = create_project(client)
     project_id = project["id"]
 
@@ -113,3 +113,83 @@ def test_prd_and_planning_generation_and_export(client):
     planning_export_response = client.get(f"/api/v1/projects/{project_id}/export/planning/markdown")
     assert planning_export_response.status_code == 200
     assert "BuildFlow AI Planning" in planning_export_response.text
+
+    task_breakdown_generation_response = client.post(f"/api/v1/projects/{project_id}/task-breakdown/generate", json={})
+    assert task_breakdown_generation_response.status_code == 202
+    task_breakdown_run_id = task_breakdown_generation_response.json()["data"]["run"]["id"]
+
+    task_breakdown_run_response = client.get(f"/api/v1/runs/{task_breakdown_run_id}")
+    assert task_breakdown_run_response.status_code == 200
+    assert task_breakdown_run_response.json()["data"]["status"] == "completed"
+
+    task_breakdown_artifact_response = client.get(f"/api/v1/projects/{project_id}/artifacts/task-breakdown/latest")
+    assert task_breakdown_artifact_response.status_code == 200
+    task_breakdown_artifact = task_breakdown_artifact_response.json()["data"]
+    assert task_breakdown_artifact["type"] == "task_breakdown"
+    assert len(task_breakdown_artifact["content_json"]["modules"]) >= 1
+
+    task_breakdown_export_response = client.get(f"/api/v1/projects/{project_id}/export/task-breakdown/markdown")
+    assert task_breakdown_export_response.status_code == 200
+    assert "BuildFlow AI Task Breakdown" in task_breakdown_export_response.text
+
+    demo_generation_response = client.post(f"/api/v1/projects/{project_id}/demo/generate", json={})
+    assert demo_generation_response.status_code == 202
+    demo_run_id = demo_generation_response.json()["data"]["run"]["id"]
+
+    demo_run_response = client.get(f"/api/v1/runs/{demo_run_id}")
+    assert demo_run_response.status_code == 200
+    assert demo_run_response.json()["data"]["status"] == "completed"
+
+    demo_artifact_response = client.get(f"/api/v1/projects/{project_id}/artifacts/demo/latest")
+    assert demo_artifact_response.status_code == 200
+    demo_artifact = demo_artifact_response.json()["data"]
+    assert demo_artifact["type"] == "demo"
+    assert len(demo_artifact["content_json"]["screens"]) >= 1
+    assert len(demo_artifact["content_json"]["agent_cards"]) >= 2
+
+    demo_export_response = client.get(f"/api/v1/projects/{project_id}/export/demo/markdown")
+    assert demo_export_response.status_code == 200
+    assert "BuildFlow AI Demo Blueprint" in demo_export_response.text
+
+
+def test_demo_generation_falls_back_to_local_template_when_bailian_times_out(client, monkeypatch):
+    demo_workflow_module = __import__("app.workflows.demo_workflow", fromlist=["DemoWorkflow"])
+    project = create_project(client)
+    project_id = project["id"]
+
+    clarification_response = client.post(f"/api/v1/projects/{project_id}/clarifications/generate", json={})
+    questions = clarification_response.json()["data"]["questions"]
+    client.put(
+        f"/api/v1/projects/{project_id}/clarifications/answers",
+        json={
+            "answers": [
+                {"question_id": question["id"], "answer": f"回答 {index}"}
+                for index, question in enumerate(questions, start=1)
+            ]
+        },
+    )
+
+    assert client.post(f"/api/v1/projects/{project_id}/prd/generate", json={}).status_code == 202
+    assert client.post(f"/api/v1/projects/{project_id}/planning/generate", json={}).status_code == 202
+    assert client.post(f"/api/v1/projects/{project_id}/task-breakdown/generate", json={}).status_code == 202
+
+    class TimeoutDemoProvider:
+        def generate_demo_blueprint_document(self, project, prd_document, planning_document, task_breakdown_document, answers):
+            raise ValueError("bailian_timeout")
+
+    monkeypatch.setattr(demo_workflow_module, "get_llm_provider", lambda: TimeoutDemoProvider())
+
+    demo_generation_response = client.post(f"/api/v1/projects/{project_id}/demo/generate", json={})
+    assert demo_generation_response.status_code == 202
+    demo_run_id = demo_generation_response.json()["data"]["run"]["id"]
+
+    demo_run_response = client.get(f"/api/v1/runs/{demo_run_id}")
+    assert demo_run_response.status_code == 200
+    assert demo_run_response.json()["data"]["status"] == "completed"
+
+    demo_artifact_response = client.get(f"/api/v1/projects/{project_id}/artifacts/demo/latest")
+    assert demo_artifact_response.status_code == 200
+    demo_artifact = demo_artifact_response.json()["data"]
+    assert demo_artifact["type"] == "demo"
+    assert len(demo_artifact["content_json"]["screens"]) >= 1
+    assert all(card["model_used"] == "local-fallback" for card in demo_artifact["content_json"]["agent_cards"])

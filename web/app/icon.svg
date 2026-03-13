@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="BuildFlow AI icon">
+  <defs>
+    <linearGradient id="bg" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#22c55e" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#bg)" />
+  <path d="M17 20h16c7.2 0 13 5.8 13 13s-5.8 13-13 13H17z" fill="#0b1220" stroke="url(#accent)" stroke-width="3" />
+  <path d="M24 26h8c3.9 0 7 3.1 7 7s-3.1 7-7 7h-8z" fill="url(#accent)" opacity="0.95" />
+  <path d="M45 19v26" stroke="#38bdf8" stroke-linecap="round" stroke-width="4" />
+  <path d="M45 25l6-6" stroke="#38bdf8" stroke-linecap="round" stroke-width="4" />
+  <path d="M45 39l6 6" stroke="#22c55e" stroke-linecap="round" stroke-width="4" />
+</svg>

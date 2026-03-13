@@ -1,19 +1,14 @@
-﻿"use client";
+"use client";
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { PageShell } from "@/components/page-shell";
 import { PrdViewer } from "@/components/prd-viewer";
+import { StatusPanel } from "@/components/status-panel";
 import { exportMarkdown, generatePlanning, getLatestPrd, getProject, getRun } from "@/lib/api-client";
+import { loadArtifactWithPolling } from "@/lib/run-artifact-polling";
 import { Project, PrdArtifact } from "@/lib/types";
-
-const POLL_INTERVAL_MS = 1500;
-const POLL_TIMEOUT_MS = 180000;
-
-function sleep(milliseconds: number) {
-  return new Promise((resolve) => setTimeout(resolve, milliseconds));
-}
 
 export function PrdResult({ projectId, runId }: { projectId: string; runId?: string }) {
   const router = useRouter();
@@ -24,50 +19,47 @@ export function PrdResult({ projectId, runId }: { projectId: string; runId?: str
   const [planningLoading, setPlanningLoading] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function bootstrap() {
       try {
-        setProject(await getProject(projectId));
-
-        if (!runId) {
-          setArtifact(await getLatestPrd(projectId));
-          setStatus("已加载最新 PRD");
+        setError(null);
+        const nextProject = await getProject(projectId);
+        if (cancelled) {
           return;
         }
 
-        setStatus("正在生成 PRD...");
-        const deadline = Date.now() + POLL_TIMEOUT_MS;
-
-        while (Date.now() < deadline) {
-          const run = await getRun(runId);
-          if (run.status === "completed") {
-            try {
-              setArtifact(await getLatestPrd(projectId));
-              setStatus("PRD 生成完成");
-              return;
-            } catch {
-              setStatus("PRD 已完成，正在同步产物...");
-            }
-          }
-
-          if (run.status === "failed") {
-            throw new Error(run.error_message ?? "PRD 生成失败");
-          }
-
-          await sleep(POLL_INTERVAL_MS);
-        }
-
-        try {
-          setArtifact(await getLatestPrd(projectId));
-          setStatus("PRD 已生成，页面已同步最新结果");
-        } catch {
-          setStatus("后台任务耗时较长，请稍后刷新页面查看结果。");
-        }
+        setProject(nextProject);
+        await loadArtifactWithPolling({
+          runId,
+          loadArtifact: () => getLatestPrd(projectId),
+          loadRun: getRun,
+          setArtifact,
+          setStatus,
+          isCancelled: () => cancelled,
+          labels: {
+            latestLoadedStatus: "已加载最新 PRD",
+            initialLoadingStatus: "正在生成 PRD...",
+            completedStatus: "PRD 生成完成",
+            syncingStatus: "PRD 已完成，正在同步产物...",
+            slowLoadingStatus: "后台任务耗时较长，仍在自动刷新最新结果...",
+            failedStatus: "PRD 生成失败",
+          },
+        });
       } catch (loadError) {
+        if (cancelled) {
+          return;
+        }
+
         setError(loadError instanceof Error ? loadError.message : "加载 PRD 失败");
       }
     }
 
     void bootstrap();
+
+    return () => {
+      cancelled = true;
+    };
   }, [projectId, runId]);
 
   const markdown = useMemo(() => artifact?.content_markdown ?? "", [artifact]);
@@ -96,45 +88,53 @@ export function PrdResult({ projectId, runId }: { projectId: string; runId?: str
   }
 
   return (
-    <PageShell title={`PRD 结果${project ? ` · ${project.name}` : ""}`} description="系统输出固定结构的 PRD，并同步保留 Markdown 导出版。">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3">
-        <div>
-          <p className="text-sm font-medium text-white">当前状态</p>
-          <p className="text-sm text-slate-300" data-testid="prd-status">{error ?? status}</p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={handleGeneratePlanning}
-            disabled={!artifact || planningLoading}
-            data-testid="prd-generate-planning"
-            className="rounded-lg border border-sky-400 px-4 py-2 text-sm font-medium text-sky-300 hover:bg-sky-500/10 disabled:cursor-not-allowed disabled:border-slate-700 disabled:text-slate-500"
-          >
-            {planningLoading ? "生成中..." : "生成开发规划"}
-          </button>
-          <button
-            type="button"
-            onClick={handleExport}
-            disabled={!artifact}
-            data-testid="prd-export-markdown"
-            className="rounded-lg bg-sky-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300"
-          >
-            导出 Markdown
-          </button>
-        </div>
-      </div>
+    <PageShell stageKey="prd" title={`PRD 结果${project ? ` · ${project.name}` : ""}`} description="系统会输出结构化 PRD，并保留可导出的 Markdown 版本。">
+      <div className="space-y-6">
+        <StatusPanel
+          phaseLabel="PRD 生成"
+          status={status}
+          error={error}
+          artifactReady={Boolean(artifact)}
+          testId="prd-status"
+          helper="产物生成后会自动显示在页面中，你可以直接继续下一阶段。"
+          actions={
+            <>
+              <button
+                type="button"
+                onClick={handleGeneratePlanning}
+                disabled={!artifact || planningLoading}
+                data-testid="prd-generate-planning"
+                className="secondary-btn"
+              >
+                {planningLoading ? "生成中..." : "继续生成开发规划"}
+              </button>
+              <button
+                type="button"
+                onClick={handleExport}
+                disabled={!artifact}
+                data-testid="prd-export-markdown"
+                className="primary-btn"
+              >
+                导出 Markdown
+              </button>
+            </>
+          }
+        />
 
-      {artifact ? (
-        <>
-          <PrdViewer document={artifact.content_json} />
-          <div className="mt-8 rounded-xl border border-slate-800 bg-slate-950/50 p-4">
-            <h2 className="mb-3 text-lg font-semibold text-white">Markdown 预览</h2>
-            <pre className="overflow-x-auto whitespace-pre-wrap text-sm leading-6 text-slate-300">{markdown}</pre>
+        {artifact ? (
+          <div className="space-y-8">
+            <div className="glass-card p-6">
+              <PrdViewer document={artifact.content_json} />
+            </div>
+            <div className="glass-card p-5">
+              <h2 className="text-lg font-semibold text-white">Markdown 预览</h2>
+              <pre className="mt-4 overflow-x-auto whitespace-pre-wrap text-sm leading-6 text-slate-300">{markdown}</pre>
+            </div>
           </div>
-        </>
-      ) : (
-        <p className="text-sm text-slate-300">当前还没有可展示的 PRD 结果。</p>
-      )}
+        ) : (
+          <div className="glass-card soft-grid p-6 text-sm leading-6 text-slate-300">暂时还没有可展示的 PRD，生成完成后会自动出现。</div>
+        )}
+      </div>
     </PageShell>
   );
 }

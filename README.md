@@ -13,9 +13,9 @@
 [![GitHub Repo](https://img.shields.io/badge/GitHub-buildflow--ai-111827?logo=github&logoColor=white)](https://github.com/Chen12413/buildflow-ai)
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Chen12413/buildflow-ai)
 
-BuildFlow AI is an AI agent workflow project built with `Next.js + FastAPI`. It turns rough product ideas into structured clarification, PRD output, and implementation planning through one end-to-end flow.
+BuildFlow AI is an AI agent workflow project built with `Next.js + FastAPI`. It turns rough product ideas into clarification notes, PRD output, implementation planning, task breakdown, and a multi-agent demo blueprint through one maintainable end-to-end flow.
 
-> Main flow: `Idea Input -> Clarification -> PRD Generation -> Planning Generation -> Review & Export`
+> Main flow: `Idea Input -> Clarification -> PRD -> Planning -> Task Breakdown -> Demo -> Export`
 
 ## Live URLs
 
@@ -31,7 +31,7 @@ This is not a throwaway vibe-coding prototype. It is a long-term portfolio proje
 
 - Designed for AI product managers, indie builders, and startup teams
 - Demonstrates how LLM capability can be embedded into a practical workflow
-- Focuses on PRD-driven development, module boundaries, testing, and iteration
+- Focuses on PRD-driven development, module boundaries, testing, iteration, and showcase quality
 - Suitable for GitHub, personal website, and resume presentation
 
 ## Core capabilities
@@ -40,9 +40,13 @@ This is not a throwaway vibe-coding prototype. It is a long-term portfolio proje
 - Generate clarification questions automatically
 - Turn clarified inputs into a PRD
 - Turn the PRD into an implementation plan
+- Break the plan down into module-level tasks and test checkpoints
+- Generate a multi-agent demo blueprint with screens, flows, and agent cards
+- Present long-running stages with polished status panels and progress bars
 - Export results as Markdown
 - Switch between `mock` and real LLM providers
 - Support Aliyun Bailian with responses-first and chat fallback strategy
+- Handle transient provider failures with friendlier errors and demo fallback behavior
 - Cover the flow with backend tests, frontend build checks, and Playwright E2E
 
 ## Showcase highlights
@@ -50,7 +54,24 @@ This is not a throwaway vibe-coding prototype. It is a long-term portfolio proje
 - **Real workflow**: not a single feature, but a full agent business chain
 - **Maintainable engineering**: API design, structure, scripts, tests, and deployment are all included
 - **Provider flexibility**: demo-friendly `mock` mode and real-provider mode both exist
+- **Presentation quality**: progress feedback, demo studio, and agent panels are ready for portfolio use
+- **Resilience**: real-provider mode includes responses-first routing, fallback paths, and clearer error messages
 - **Publish-ready**: includes `render.yaml`, Docker, CI, and a public live demo
+
+## Latest improvements
+
+- Added `Task Breakdown` and `Demo` stages to extend the chain beyond PRD and planning
+- Added a multi-agent demo studio with screen-level outputs and agent responsibility cards
+- Improved long-task UX with a reusable `StatusPanel` and animated percentage progress bar
+- Improved Bailian integration with better timeout handling, retry strategy, and user-friendly error mapping
+- Added more regression coverage around provider fallback and demo generation behavior
+
+## Portfolio kit
+
+- Case study: `docs/portfolio-case-study.md`
+- Resume / homepage copy: `docs/profile-copy.md`
+- Showcase guide: `docs/showcase-kit.md`
+- Social preview cover: `docs/assets/social-preview.svg`
 
 ## Screenshots
 
@@ -66,6 +87,14 @@ This is not a throwaway vibe-coding prototype. It is a long-term portfolio proje
 |---|
 | ![BuildFlow AI Planning](docs/assets/screenshots/planning.png) |
 
+| Task Breakdown | Demo Overview |
+|---|---|
+| ![BuildFlow AI Task Breakdown](docs/assets/screenshots/task-breakdown.png) | ![BuildFlow AI Demo Overview](docs/assets/screenshots/demo-overview.png) |
+
+| Demo Studio | Agent Panel |
+|---|---|
+| ![BuildFlow AI Demo Studio](docs/assets/screenshots/demo-studio.png) | ![BuildFlow AI Agent Panel](docs/assets/screenshots/agent-panel.png) |
+
 ## Architecture
 
 ```mermaid
@@ -78,11 +107,20 @@ flowchart LR
   A --> C1[Clarification Service]
   A --> C2[PRD Service]
   A --> C3[Planning Service]
+  A --> C4[Task Breakdown Service]
+  A --> C5[Demo Service]
+  A --> E[Export Service]
   C1 --> L
   C2 --> L
   C3 --> L
+  C4 --> L
+  C5 --> L
+  C1 --> D
   C2 --> D
   C3 --> D
+  C4 --> D
+  C5 --> D
+  E --> D
 ```
 
 ## Tech stack
@@ -105,6 +143,7 @@ flowchart LR
 - `GitHub Actions`
 - `Docker`
 - `PowerShell` scripts for dev and test workflows
+- Stable web workspace sync for OneDrive-heavy Windows setups
 
 ## Quick start
 
@@ -114,10 +153,40 @@ flowchart LR
 powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1
 ```
 
+If your repo is inside `OneDrive` and Next.js becomes unstable, use the stable web copy mode:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -UseStableWebCopy
+```
+
 Default local URLs:
 
 - Web: `http://localhost:3000`
 - API: `http://localhost:8000`
+
+### Production preview for web
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\web-preview.ps1
+```
+
+Only build without starting preview:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\web-preview.ps1 -BuildOnly
+```
+
+### Auto-generate showcase screenshots
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\showcase.ps1
+```
+
+If your repo is inside `OneDrive`, the screenshot flow can also use the stable web copy automatically. You can force it explicitly with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\showcase.ps1 -UseStableWebCopy
+```
 
 ### Run tests
 
@@ -130,6 +199,14 @@ Include E2E:
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -IncludeE2E
 ```
+
+### Verification snapshot
+
+- `scripts/test.ps1` validates backend tests and frontend build checks
+- `scripts/e2e.ps1` validates the end-to-end flow from idea input to demo
+- `scripts/showcase.ps1` generates portfolio screenshots automatically
+- `scripts/web-preview.ps1` builds and serves a production-style preview outside OneDrive
+- Real-provider mode has been smoke-tested locally with Bailian across the full chain when provider quota and request stability allow
 
 ## Environment setup
 
@@ -196,12 +273,15 @@ render.yaml          Render Blueprint configuration
 ## Roadmap
 
 - [x] Single-flow MVP: Idea -> Clarification -> PRD -> Planning
+- [x] Task breakdown and demo generation stages
+- [x] Multi-agent demo studio and agent panels
 - [x] `mock` provider and real provider modes
 - [x] Aliyun Bailian integration
 - [x] Backend tests and frontend build checks
 - [x] Playwright E2E
 - [x] GitHub-ready repository polish
 - [x] Render live deployment
+- [x] Long-task UX polish and progress feedback
 - [ ] Postgres persistence upgrade
 - [ ] Team collaboration and history comparison
 - [ ] Prompt debugging and evaluation panel

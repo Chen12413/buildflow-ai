@@ -1,19 +1,232 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
+}
+
+html {
+  min-height: 100%;
+  background: #020617;
 }
 
 body {
-  @apply bg-slate-950 text-slate-50 antialiased;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 32%),
+    radial-gradient(circle at top right, rgba(129, 140, 248, 0.12), transparent 28%),
+    radial-gradient(circle at bottom center, rgba(16, 185, 129, 0.1), transparent 26%),
+    linear-gradient(180deg, #020617 0%, #020617 48%, #0f172a 100%);
+  color: #e2e8f0;
+  overflow-x: hidden;
 }
 
-a {
-  @apply text-sky-300 hover:text-sky-200;
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
 }
 
-button {
-  @apply transition-colors;
+body::before {
+  top: 72px;
+  right: -120px;
+  width: 320px;
+  height: 320px;
+  background: rgba(56, 189, 248, 0.16);
+}
+
+body::after {
+  bottom: 48px;
+  left: -100px;
+  width: 280px;
+  height: 280px;
+  background: rgba(99, 102, 241, 0.14);
+}
+
+@layer base {
+  * {
+    @apply border-slate-800;
+  }
+
+  body {
+    @apply text-slate-100 antialiased;
+  }
+
+  a {
+    @apply transition-colors duration-200;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    @apply transition-all duration-200;
+  }
+
+  ::selection {
+    background: rgba(56, 189, 248, 0.32);
+    color: #f8fafc;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply rounded-3xl border border-white/10 bg-slate-950/60 shadow-[0_24px_90px_-40px_rgba(14,165,233,0.35)] backdrop-blur-xl;
+  }
+
+  .hero-panel {
+    @apply glass-card relative overflow-hidden;
+  }
+
+  .section-label {
+    @apply inline-flex items-center rounded-full border border-sky-400/30 bg-sky-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-sky-200;
+  }
+
+  .stage-pill {
+    @apply inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium;
+  }
+
+  .input-field {
+    @apply w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-sky-400/50 focus:bg-slate-950 focus:shadow-[0_0_0_3px_rgba(56,189,248,0.12)];
+  }
+
+  .textarea-field {
+    @apply input-field min-h-[120px] resize-y;
+  }
+
+  .select-field {
+    @apply input-field;
+  }
+
+  .primary-btn {
+    @apply inline-flex items-center justify-center rounded-2xl bg-sky-400 px-5 py-3 text-sm font-semibold text-slate-950 shadow-[0_14px_30px_-18px_rgba(56,189,248,0.9)] hover:bg-sky-300 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300 disabled:shadow-none;
+  }
+
+  .secondary-btn {
+    @apply inline-flex items-center justify-center rounded-2xl border border-sky-400/40 bg-sky-400/5 px-5 py-3 text-sm font-semibold text-sky-200 hover:bg-sky-400/10 disabled:cursor-not-allowed disabled:border-slate-700 disabled:bg-slate-900 disabled:text-slate-500;
+  }
+
+  .ghost-btn {
+    @apply inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10 disabled:cursor-not-allowed disabled:border-slate-800 disabled:bg-slate-900 disabled:text-slate-500;
+  }
+
+  .progress-track {
+    position: relative;
+    overflow: hidden;
+    height: 10px;
+    border-radius: 9999px;
+    background: rgba(15, 23, 42, 0.9);
+    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.14);
+  }
+
+  .progress-fill {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 9999px;
+    background-size: 200% 100%;
+    animation: shimmer 2.8s linear infinite;
+    transition: transform 280ms ease;
+    box-shadow: 0 0 24px rgba(56, 189, 248, 0.22);
+    will-change: transform;
+  }
+
+  .progress-fill--sky {
+    background-image: linear-gradient(90deg, #38bdf8 0%, #818cf8 50%, #22d3ee 100%);
+  }
+
+  .progress-fill--emerald {
+    background-image: linear-gradient(90deg, #34d399 0%, #10b981 50%, #6ee7b7 100%);
+  }
+
+  .progress-fill--amber {
+    background-image: linear-gradient(90deg, #f59e0b 0%, #fbbf24 50%, #f97316 100%);
+  }
+
+  .progress-fill--rose {
+    background-image: linear-gradient(90deg, #fb7185 0%, #f43f5e 50%, #fda4af 100%);
+  }
+}
+
+.hero-panel::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(99, 102, 241, 0.14), transparent 24%);
+  pointer-events: none;
+}
+
+.hero-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.soft-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.float-soft {
+  animation: float-soft 5.5s ease-in-out infinite;
+}
+
+.pulse-soft {
+  animation: pulse-soft 2.2s ease-in-out infinite;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.8);
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: rgba(71, 85, 105, 0.9);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.95);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
 }

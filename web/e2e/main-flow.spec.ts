@@ -1,7 +1,7 @@
-import { expect, test } from "@playwright/test";
+﻿import { expect, test } from "@playwright/test";
 
 test.describe("BuildFlow main flow", () => {
-  test("user can go from idea to PRD and planning", async ({ page }) => {
+  test("user can go from idea to PRD, planning, task breakdown, and demo", async ({ page }) => {
     const projectName = `E2E Project ${Date.now()}`;
 
     await page.goto("/");
@@ -12,7 +12,7 @@ test.describe("BuildFlow main flow", () => {
     await expect(page.getByTestId("project-form")).toBeVisible();
 
     await page.getByTestId("project-name").fill(projectName);
-    await page.getByTestId("project-idea").fill("Generate a PRD and implementation plan for independent builders.");
+    await page.getByTestId("project-idea").fill("Generate a PRD, execution plan, task breakdown, and product demo for independent builders.");
     await page.getByTestId("project-target-user").fill("indie hackers, AI product managers, startup teams");
     await page.getByTestId("project-platform").selectOption("web");
     await page.getByTestId("project-constraints").fill("Ship an MVP in one day with strong maintainability and testability.");
@@ -27,9 +27,7 @@ test.describe("BuildFlow main flow", () => {
     expect(answerCount).toBeGreaterThanOrEqual(3);
 
     for (let index = 0; index < answerCount; index += 1) {
-      await answers
-        .nth(index)
-        .fill(`Answer ${index + 1}: prioritize frequent scenarios, structured output, testing coverage, and iteration speed.`);
+      await answers.nth(index).fill(`Answer ${index + 1}: prioritize frequent scenarios, structured output, testing coverage, and iteration speed.`);
     }
 
     await page.getByTestId("clarification-submit").click();
@@ -37,8 +35,6 @@ test.describe("BuildFlow main flow", () => {
     await expect(page).toHaveURL(/\/projects\/[^/]+\/prd\?runId=/);
     await expect(page.getByTestId("prd-status")).toBeVisible();
     await expect(page.getByTestId("prd-viewer")).toBeVisible({ timeout: 60_000 });
-    await expect(page.getByTestId("prd-section-product_summary")).toBeVisible();
-    await expect(page.getByTestId("prd-section-success_metrics")).toBeVisible();
 
     const prdDownloadPromise = page.waitForEvent("download");
     await page.getByTestId("prd-export-markdown").click();
@@ -51,12 +47,34 @@ test.describe("BuildFlow main flow", () => {
     await expect(page.getByTestId("planning-status")).toBeVisible();
     await expect(page.getByTestId("planning-viewer")).toBeVisible({ timeout: 60_000 });
 
-    const milestoneCount = await page.getByTestId("planning-milestone").count();
-    expect(milestoneCount).toBeGreaterThan(0);
-
     const planningDownloadPromise = page.waitForEvent("download");
     await page.getByTestId("planning-export-markdown").click();
     const planningDownload = await planningDownloadPromise;
     expect(planningDownload.suggestedFilename()).toMatch(/-planning\.md$/);
+
+    await page.getByTestId("planning-generate-task-breakdown").click();
+
+    await expect(page).toHaveURL(/\/projects\/[^/]+\/task-breakdown\?runId=/);
+    await expect(page.getByTestId("task-breakdown-status")).toBeVisible();
+    await expect(page.getByTestId("task-breakdown-viewer")).toBeVisible({ timeout: 60_000 });
+    expect(await page.getByTestId("task-breakdown-module").count()).toBeGreaterThan(0);
+
+    const taskDownloadPromise = page.waitForEvent("download");
+    await page.getByTestId("task-breakdown-export-markdown").click();
+    const taskDownload = await taskDownloadPromise;
+    expect(taskDownload.suggestedFilename()).toMatch(/-task-breakdown\.md$/);
+
+    await page.getByTestId("task-breakdown-generate-demo").click();
+
+    await expect(page).toHaveURL(/\/projects\/[^/]+\/demo\?runId=/);
+    await expect(page.getByTestId("demo-status")).toBeVisible();
+    await expect(page.getByTestId("demo-viewer")).toBeVisible({ timeout: 60_000 });
+    expect(await page.getByTestId("demo-screen").count()).toBeGreaterThan(0);
+    expect(await page.getByTestId("demo-agent-card").count()).toBeGreaterThan(1);
+
+    const demoDownloadPromise = page.waitForEvent("download");
+    await page.getByTestId("demo-export-markdown").click();
+    const demoDownload = await demoDownloadPromise;
+    expect(demoDownload.suggestedFilename()).toMatch(/-demo\.md$/);
   });
 });

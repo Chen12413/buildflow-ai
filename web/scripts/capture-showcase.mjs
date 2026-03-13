@@ -9,13 +9,19 @@ import { chromium } from "playwright";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const webDir = path.resolve(__dirname, "..");
-const repoRoot = path.resolve(webDir, "..");
+const webDir = process.env.BUILD_FLOW_WEB_WORKSPACE?.trim()
+  ? path.resolve(process.env.BUILD_FLOW_WEB_WORKSPACE.trim())
+  : path.resolve(__dirname, "..");
+const repoRoot = process.env.BUILD_FLOW_REPO_ROOT?.trim()
+  ? path.resolve(process.env.BUILD_FLOW_REPO_ROOT.trim())
+  : path.resolve(webDir, "..");
 const apiDir = path.resolve(repoRoot, "api");
-const outputDir = path.resolve(repoRoot, "docs", "assets", "screenshots");
+const outputDir = process.env.BUILD_FLOW_OUTPUT_DIR?.trim()
+  ? path.resolve(process.env.BUILD_FLOW_OUTPUT_DIR.trim())
+  : path.resolve(repoRoot, "docs", "assets", "screenshots");
 
-const webPort = 3020;
-const apiPort = 8020;
+const webPort = Number(process.env.BUILD_FLOW_SHOWCASE_WEB_PORT ?? 3020);
+const apiPort = Number(process.env.BUILD_FLOW_SHOWCASE_API_PORT ?? 8020);
 const baseURL = `http://127.0.0.1:${webPort}`;
 const apiBaseURL = `http://127.0.0.1:${apiPort}`;
 
@@ -87,6 +93,11 @@ function startProcess(command, args, options) {
   return child;
 }
 
+async function screenshotElement(page, locator, fileName) {
+  await locator.waitFor({ state: "visible", timeout: 60000 });
+  await locator.screenshot({ path: path.join(outputDir, fileName) });
+}
+
 async function main() {
   assertExists(pythonBin, "Python virtual environment");
   assertExists(path.resolve(webDir, "node_modules"), "web/node_modules");
@@ -138,10 +149,10 @@ async function main() {
 
     await page.goto(`${baseURL}/projects/new`, { waitUntil: "networkidle" });
     await page.getByTestId("project-name").fill(projectName);
-    await page.getByTestId("project-idea").fill("Turn raw product ideas into structured PRD and planning artifacts.");
+    await page.getByTestId("project-idea").fill("Turn raw product ideas into PRD, planning, task breakdown, and demo artifacts.");
     await page.getByTestId("project-target-user").fill("Indie hackers, AI product managers, startup teams");
     await page.getByTestId("project-platform").selectOption("web");
-    await page.getByTestId("project-constraints").fill("Build an MVP in one day and keep the codebase maintainable.");
+    await page.getByTestId("project-constraints").fill("Build an MVP in one day, keep the codebase maintainable, and make it portfolio-ready.");
     await page.screenshot({ path: path.join(outputDir, "new-project.png"), fullPage: false });
 
     await page.getByTestId("project-submit").click();
@@ -154,7 +165,7 @@ async function main() {
     for (let index = 0; index < answerCount; index += 1) {
       await answers
         .nth(index)
-        .fill(`Showcase answer ${index + 1}: focus on high-frequency scenarios, structured outputs, testing, and long-term iteration.`);
+        .fill(`Showcase answer ${index + 1}: focus on high-frequency scenarios, structured outputs, testing, long-term iteration, and showcase value.`);
     }
 
     await page.getByTestId("clarification-submit").click();
@@ -166,6 +177,23 @@ async function main() {
     await page.waitForURL(/\/projects\/[^/]+\/planning\?runId=/);
     await page.locator('[data-testid="planning-viewer"]').waitFor({ state: "visible", timeout: 60000 });
     await page.screenshot({ path: path.join(outputDir, "planning.png"), fullPage: false });
+
+    await page.getByTestId("planning-generate-task-breakdown").click();
+    await page.waitForURL(/\/projects\/[^/]+\/task-breakdown\?runId=/);
+    await page.locator('[data-testid="task-breakdown-viewer"]').waitFor({ state: "visible", timeout: 60000 });
+    await page.screenshot({ path: path.join(outputDir, "task-breakdown.png"), fullPage: false });
+
+    await page.getByTestId("task-breakdown-generate-demo").click();
+    await page.waitForURL(/\/projects\/[^/]+\/demo\?runId=/);
+    await page.locator('[data-testid="demo-viewer"]').waitFor({ state: "visible", timeout: 60000 });
+    await page.screenshot({ path: path.join(outputDir, "demo-overview.png"), fullPage: false });
+
+    await page.getByRole("button", { name: "Demo Studio" }).click();
+    await page.locator('[data-testid="demo-screen"]').waitFor({ state: "visible", timeout: 60000 });
+    await screenshotElement(page, page.locator('[data-testid="demo-screen"]'), "demo-studio.png");
+
+    await screenshotElement(page, page.locator('[data-testid="demo-agent-card"]').first(), "agent-card.png");
+    await screenshotElement(page, page.locator('[data-testid="agent-run-panel"]'), "agent-panel.png");
 
     await browser.close();
   } finally {

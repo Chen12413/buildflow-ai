@@ -1,4 +1,4 @@
-import os
+﻿import os
 from pathlib import Path
 
 import pytest
@@ -19,8 +19,10 @@ for variable_name in (
     os.environ.pop(variable_name, None)
 
 import app.db.session as db_session
+import app.services.demo_service as demo_service
 import app.services.planning_service as planning_service
 import app.services.prd_service as prd_service
+import app.services.task_breakdown_service as task_breakdown_service
 from app.core.config import get_settings
 from app.db.base import Base
 from app.db.session import get_db
@@ -37,8 +39,10 @@ def client(tmp_path: Path):
 
     db_session.engine = engine
     db_session.SessionLocal = testing_session_local
+    demo_service.SessionLocal = testing_session_local
     prd_service.SessionLocal = testing_session_local
     planning_service.SessionLocal = testing_session_local
+    task_breakdown_service.SessionLocal = testing_session_local
     Base.metadata.create_all(bind=engine)
 
     def override_get_db():

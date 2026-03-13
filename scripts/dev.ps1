@@ -1,16 +1,18 @@
 param(
     [switch]$ApiOnly,
     [switch]$WebOnly,
-    [switch]$InstallDeps
+    [switch]$InstallDeps,
+    [switch]$UseStableWebCopy,
+    [string]$StableWebDir = "C:/buildflow-web-dev"
 )
 
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
+. (Join-Path $PSScriptRoot "lib/web-workspace.ps1")
 $apiDir = Join-Path $repoRoot "api"
-$webDir = Join-Path $repoRoot "web"
+$webWorkspace = Get-WebWorkspaceContext -RepoRoot $repoRoot -UseStableWebCopy:$UseStableWebCopy -StableWebDir $StableWebDir
 $apiVenvPython = Join-Path $apiDir ".venv\Scripts\python.exe"
-$webNodeModules = Join-Path $webDir "node_modules"
 
 function Get-PythonBootstrapCommand {
     $candidates = @(
@@ -62,20 +64,7 @@ function Ensure-ApiEnvironment {
 }
 
 function Ensure-WebEnvironment {
-    if (-not (Test-Path (Join-Path $webDir ".env.local")) -and (Test-Path (Join-Path $webDir ".env.local.example"))) {
-        Copy-Item (Join-Path $webDir ".env.local.example") (Join-Path $webDir ".env.local")
-        Write-Host "[web] Copied .env.local from .env.local.example" -ForegroundColor DarkGray
-    }
-
-    if ($InstallDeps -or -not (Test-Path $webNodeModules)) {
-        Write-Host "[web] Installing Node.js dependencies..." -ForegroundColor Cyan
-        Push-Location $webDir
-        try {
-            npm install
-        } finally {
-            Pop-Location
-        }
-    }
+    Ensure-WebWorkspace -Workspace $webWorkspace -InstallDeps:$InstallDeps
 }
 
 function Start-TerminalProcess($title, $workingDirectory, $command) {
@@ -99,7 +88,7 @@ if (-not $WebOnly) {
 
 if (-not $ApiOnly) {
     Write-Host "[web] Starting Next.js dev server..." -ForegroundColor Green
-    Start-TerminalProcess "BuildFlow Web" $webDir "npm run dev"
+    Start-TerminalProcess "BuildFlow Web" $webWorkspace.ResolvedWebDir "npm run dev"
 }
 
 Write-Host "Done. API: http://localhost:8000  Web: http://localhost:3000" -ForegroundColor Yellow

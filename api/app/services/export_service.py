@@ -1,4 +1,4 @@
-from app.repositories.artifact_repository import ArtifactRepository
+﻿from app.repositories.artifact_repository import ArtifactRepository
 from app.repositories.project_repository import ProjectRepository
 from app.schemas.artifact import ArtifactType
 
@@ -13,6 +13,12 @@ class ExportService:
 
     def get_latest_planning(self, project_id: str):
         return self.get_latest_artifact(project_id, ArtifactType.PLANNING)
+
+    def get_latest_task_breakdown(self, project_id: str):
+        return self.get_latest_artifact(project_id, ArtifactType.TASK_BREAKDOWN)
+
+    def get_latest_demo(self, project_id: str):
+        return self.get_latest_artifact(project_id, ArtifactType.DEMO)
 
     def get_latest_artifact(self, project_id: str, artifact_type: ArtifactType):
         project = self.project_repository.get_by_id(project_id)

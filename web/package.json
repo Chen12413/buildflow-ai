@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node ./scripts/start-standalone.mjs",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "capture:showcase": "node ./scripts/capture-showcase.mjs"

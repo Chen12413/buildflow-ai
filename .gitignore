@@ -28,6 +28,12 @@ output/
 web/playwright-report/
 web/test-results/
 .playwright-cli/
+output-*.log
+output-*.err.log
+output-*-pid.txt
+output-*-pids.txt
+python-spawn-test.txt
+*.tsbuildinfo
 
 # Local temporary files
 tmp-test-write.txt
@@ -37,3 +43,4 @@ scripts/path-user-backup-*.txt
 # OS
 .DS_Store
 Thumbs.db
+tmp-utf8-test.txt
