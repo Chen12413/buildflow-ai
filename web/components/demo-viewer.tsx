@@ -149,7 +149,7 @@ export function DemoViewer({ document }: { document: DemoBlueprintDocument }) {
           </div>
         </aside>
 
-        <div className="glass-card p-6">
+        <div className="glass-card p-6" data-testid="demo-screen-detail">
           {activeScreen ? (
             <>
               <span className="section-label">{activeScreen.name}</span>

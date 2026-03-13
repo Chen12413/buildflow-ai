@@ -95,6 +95,14 @@ function startProcess(command, args, options) {
 
 async function screenshotElement(page, locator, fileName) {
   await locator.waitFor({ state: "visible", timeout: 60000 });
+  await locator.scrollIntoViewIfNeeded();
+  const box = await locator.boundingBox();
+  if (box) {
+    await page.evaluate((top) => {
+      window.scrollTo({ top: Math.max(0, top - 140), behavior: "instant" });
+    }, box.y);
+  }
+  await delay(200);
   await locator.screenshot({ path: path.join(outputDir, fileName) });
 }
 
@@ -142,17 +150,17 @@ async function main() {
     const browser = await chromium.launch({ headless: true });
     const page = await browser.newPage({ viewport: { width: 1440, height: 960 } });
 
-    const projectName = `BuildFlow Showcase ${Date.now()}`;
+    const projectName = `AI 旅游规划助手 ${Date.now()}`;
 
     await page.goto(baseURL, { waitUntil: "networkidle" });
     await page.screenshot({ path: path.join(outputDir, "home.png"), fullPage: false });
 
     await page.goto(`${baseURL}/projects/new`, { waitUntil: "networkidle" });
     await page.getByTestId("project-name").fill(projectName);
-    await page.getByTestId("project-idea").fill("Turn raw product ideas into PRD, planning, task breakdown, and demo artifacts.");
-    await page.getByTestId("project-target-user").fill("Indie hackers, AI product managers, startup teams");
+    await page.getByTestId("project-idea").fill("帮助自由行用户根据目的地、预算、天数和偏好，快速生成可执行的 AI 旅游规划与每日行程建议。", { timeout: 60000 });
+    await page.getByTestId("project-target-user").fill("自由行用户、情侣出游用户、周末短途旅行者");
     await page.getByTestId("project-platform").selectOption("web");
-    await page.getByTestId("project-constraints").fill("Build an MVP in one day, keep the codebase maintainable, and make it portfolio-ready.");
+    await page.getByTestId("project-constraints").fill("一天内完成 MVP；优先展示行程生成、预算控制、每日路线和结果可视化；适合作品集演示。", { timeout: 60000 });
     await page.screenshot({ path: path.join(outputDir, "new-project.png"), fullPage: false });
 
     await page.getByTestId("project-submit").click();
@@ -165,7 +173,7 @@ async function main() {
     for (let index = 0; index < answerCount; index += 1) {
       await answers
         .nth(index)
-        .fill(`Showcase answer ${index + 1}: focus on high-frequency scenarios, structured outputs, testing, long-term iteration, and showcase value.`);
+        .fill(`示例回答 ${index + 1}：优先覆盖日本东京 3 天 2 晚自由行，支持预算区间、景点偏好、每日路线建议和旅行清单输出。`);
     }
 
     await page.getByTestId("clarification-submit").click();
@@ -188,9 +196,9 @@ async function main() {
     await page.locator('[data-testid="demo-viewer"]').waitFor({ state: "visible", timeout: 60000 });
     await page.screenshot({ path: path.join(outputDir, "demo-overview.png"), fullPage: false });
 
-    await page.getByRole("button", { name: "Demo Studio" }).click();
-    await page.locator('[data-testid="demo-screen"]').waitFor({ state: "visible", timeout: 60000 });
-    await screenshotElement(page, page.locator('[data-testid="demo-screen"]'), "demo-studio.png");
+    await page.getByRole("button", { name: "预算与出行清单" }).click();
+    await page.locator('[data-testid="demo-screen-detail"]').waitFor({ state: "visible", timeout: 60000 });
+    await screenshotElement(page, page.locator('[data-testid="demo-screen-detail"]'), "demo-studio.png");
 
     await screenshotElement(page, page.locator('[data-testid="demo-agent-card"]').first(), "agent-card.png");
     await screenshotElement(page, page.locator('[data-testid="agent-run-panel"]'), "agent-panel.png");

@@ -10,7 +10,7 @@ import { Platform } from "@/lib/types";
 const outcomeItems = [
   "自动生成高价值澄清问题，帮助收敛 MVP 范围。",
   "输出结构化 PRD 与开发规划，支持导出 Markdown。",
-  "继续拆到模块任务、验收标准、测试点和 Demo 展示。",
+  "继续拆到模块任务、验收标准、测试点和用户产品 Demo。",
 ];
 
 export default function NewProjectPage() {
@@ -44,7 +44,7 @@ export default function NewProjectPage() {
   }
 
   return (
-    <PageShell stageKey="create" title="创建项目" description="只输入最少必要信息，快速启动 BuildFlow AI 的唯一主链路。">
+    <PageShell stageKey="create" title="创建项目" description="只输入最少必要信息，快速把你的想法推进到产品实现主链路。">
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <form className="space-y-5" onSubmit={handleSubmit} data-testid="project-form">
           <div className="grid gap-5 md:grid-cols-2">
@@ -53,7 +53,7 @@ export default function NewProjectPage() {
               <input
                 name="name"
                 required
-                placeholder="例如：面向求职者的 AI 简历优化助手"
+                placeholder="例如：AI 旅游规划助手"
                 data-testid="project-name"
                 className="input-field"
               />
@@ -65,7 +65,7 @@ export default function NewProjectPage() {
                 name="idea"
                 required
                 rows={5}
-                placeholder="例如：帮助求职者把经历整理成可量化、可投递、可面试展示的简历与作品集。"
+                placeholder="例如：帮助自由行用户根据预算、天数和偏好，快速生成可执行的旅行行程。"
                 data-testid="project-idea"
                 className="textarea-field"
               />
@@ -76,7 +76,7 @@ export default function NewProjectPage() {
               <input
                 name="target_user"
                 required
-                placeholder="例如：求职者、AI 产品经理、独立开发者"
+                placeholder="例如：自由行用户、情侣出游用户、周末短途旅行者"
                 data-testid="project-target-user"
                 className="input-field"
               />
@@ -96,7 +96,7 @@ export default function NewProjectPage() {
               <textarea
                 name="constraints"
                 rows={4}
-                placeholder="例如：一天内做出 MVP；必须可测试、可部署、可长期迭代。"
+                placeholder="例如：一天内做出 MVP；优先覆盖行程生成、预算控制和每日路线展示。"
                 data-testid="project-constraints"
                 className="textarea-field"
               />
@@ -107,12 +107,12 @@ export default function NewProjectPage() {
             <div className="rounded-2xl border border-rose-400/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">{error}</div>
           ) : (
             <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300">
-              提交后会立即进入“澄清问题”阶段，帮助你先收敛范围，再开始生成 PRD。
+              提交后会立即进入“澄清问题”阶段，帮助你先收敛范围，再开始把想法推进成可实现产品。
             </div>
           )}
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-slate-400">建议先写清目标用户与成功标准，后续产出会更稳定。</p>
+            <p className="text-sm text-slate-400">建议先写清目标用户、核心场景与成功标准，后续产出会更像真实产品。</p>
             <button type="submit" disabled={loading} data-testid="project-submit" className="primary-btn">
               {loading ? "创建中..." : "创建项目并进入澄清"}
             </button>

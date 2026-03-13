@@ -3,8 +3,8 @@ import Link from "next/link";
 const mainFlow = [
   {
     step: "01 · Create",
-    title: "录入项目背景",
-    description: "输入项目名、目标用户、平台和约束，建立统一上下文。",
+    title: "录入产品想法",
+    description: "输入你要做的产品、目标用户、平台和限制条件，快速建立实现上下文。",
   },
   {
     step: "02 · Clarify",
@@ -14,25 +14,25 @@ const mainFlow = [
   {
     step: "03 · PRD / Planning",
     title: "生成文档与规划",
-    description: "连续产出 PRD、开发规划和测试重点，沉淀长期可维护文档。",
+    description: "连续产出 PRD、开发规划和测试重点，把想法快速转成可执行方案。",
   },
   {
     step: "04 · Tasks / Demo",
-    title: "拆任务并展示 Demo",
-    description: "继续输出模块任务拆解、Agent 运行面板和可展示的产品 Demo。",
+    title: "拆任务并做产品 Demo",
+    description: "继续输出模块任务拆解、Agent 运行面板，以及用户真正需要的产品 Demo。",
   },
 ];
 
 const highlights = [
   "一条主链路串起 Idea → 澄清 → PRD → Planning → Task Breakdown → Demo。",
-  "支持 Mock 与真实百炼 Provider，兼顾本地开发、在线演示和长期迭代。",
-  "内置测试、CI、部署与作品集素材，更适合写进简历和个人主页。",
+  "目标不是只写文档，而是把用户想做的产品快速推进到可展示 Demo。",
+  "支持 Mock 与真实百炼 Provider，兼顾快速实现、稳定演示和长期迭代。",
 ];
 
 const portfolioValue = [
-  "体现你对 AI 产品规划、技术协作和可维护交付的理解。",
-  "能直观看到多 Agent 分工、Prompt 可视化和产物链路。",
-  "适合面试时现场演示，从业务输入一路走到 Demo 成品。",
+  "体现你对 AI 产品规划、快速实现和可维护交付的理解。",
+  "能直观看到多 Agent 分工、Prompt 可视化和产品落地链路。",
+  "适合面试时现场演示，从业务想法一路走到可体验的产品 Demo。",
 ];
 
 export default function HomePage() {
@@ -49,11 +49,11 @@ export default function HomePage() {
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end">
           <div>
             <h1 className="max-w-4xl text-4xl font-bold leading-tight text-white md:text-5xl">
-              把一个产品想法，稳定推进到 PRD、开发规划、任务拆解与可展示 Demo
+              把一个产品想法，快速推进到 PRD、开发规划、任务拆解与可展示产品 Demo
             </h1>
             <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
-              BuildFlow AI 面向 AI 产品经理、独立开发者和小团队，重点解决“功能能跑，但代码与文档难以长期维护”的问题，
-              让你用更专业的方式做出一个能写进简历与作品集的项目。
+              BuildFlow AI 面向 AI 产品经理、独立开发者和小团队，重点解决“从想法到产品落地太慢、太散、太难维护”的问题，
+              让你更快得到文档、规划、任务拆解和用户真正需要的产品 Demo。
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4">
@@ -69,8 +69,8 @@ export default function HomePage() {
           <div className="glass-card soft-grid p-6">
             <p className="text-xs uppercase tracking-[0.22em] text-slate-500">为什么适合展示</p>
             <div className="mt-4 space-y-3 text-sm leading-6 text-slate-300">
-              <p>你不是只展示一个原型，而是在展示一套“从需求到交付”的 AI 工作流产品。</p>
-              <p>这类项目更容易体现产品思维、交付能力、Prompt 工程意识和工程化意识。</p>
+              <p>你不是只展示一份文档，而是在展示“从想法到产品快速实现”的完整方法。</p>
+              <p>这类项目更容易体现产品思维、交付能力、Prompt 设计和工程化能力。</p>
             </div>
           </div>
         </div>
@@ -110,7 +110,7 @@ export default function HomePage() {
           <p className="text-xs uppercase tracking-[0.22em] text-slate-500">推荐使用方式</p>
           <div className="mt-4 space-y-4 text-sm leading-6 text-slate-300">
             <p>先用真实业务场景走通一遍，再导出 Markdown 和截图，整理成 GitHub README 与作品集页面。</p>
-            <p>如果你正在准备 AI 产品经理面试，这个项目既能展示产品思考，也能展示你如何借助大模型提升研发效率。</p>
+            <p>如果你正在准备 AI 产品经理面试，这个项目既能展示产品思考，也能展示你如何把想法快速推进成产品。</p>
           </div>
           <Link href="/projects/new" className="primary-btn mt-6 w-full">
             现在开始
